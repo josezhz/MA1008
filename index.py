@@ -1,6 +1,6 @@
 import turtle
 
-
+'''
 def intInput(prompt):
     while True:
         try:
@@ -28,7 +28,7 @@ def limitedFloatInput(prompt, upperLimit, lowerLimit=0):
             print(f"!Input must be between {lowerLimit} and {upperLimit}")
 
 
-L_ = floatInput("L(mm) = ")
+_L = floatInput("L(mm) = ")
 while True:
     beamType = intInput("Beam type?\n1. Simply Supported\n2. Overhanging\n3. Cantilever\n")
     if beamType in [1, 2, 3]:
@@ -40,25 +40,32 @@ while True:
     while True:
         loadType = intInput("Load type?\n1. concentrated load\n2. uniformly distributed load\n3. bending moment\n")
         if loadType == 1:
-            P_ = floatInput("P(N) = ")
-            x_ = limitedFloatInput("x(mm) = ", L_)
-            loads.append([loadType, P_, x_])
+            _P = floatInput("P(N) = ")
+            _x = limitedFloatInput("x(mm) = ", _L)
+            loads.append([loadType, _P, _x])
             break
         elif loadType == 2:
-            w_ = floatInput("w(N/m) = ")
-            x1_ = limitedFloatInput("x1(mm) = ", L_)
-            x2_ = limitedFloatInput("x2(mm) = ", L_, x1_)
-            loads.append([loadType, w_, x1_, x2_])
+            _w = floatInput("w(N/m) = ")
+            _x1 = limitedFloatInput("x1(mm) = ", _L)
+            _x2 = limitedFloatInput("x2(mm) = ", _L, _x1)
+            loads.append([loadType, _w, _x1, _x2])
             break
         elif loadType == 3:
-            M_ = floatInput("M(Nm) = ")
-            x_ = limitedFloatInput("x(mm) = ", L_)
-            loads.append([loadType, M_, x_])
+            _M = floatInput("M(Nm) = ")
+            _x = limitedFloatInput("x(mm) = ", _L)
+            loads.append([loadType, _M, _x])
             break
     if input("Add another load? (y/n)").lower() == "n":
         break
-print("L_ =", L_, "beamType =", beamType)
+print("_L =", _L, "beamType =", beamType)
 print("loads =", loads)
+
+data = open("data.txt", "w")
+print(_L, beamType, file=data)
+for eachLoad in loads:
+    print(" ".join(str(e) for e in eachLoad), file=data)
+data.close()
+'''
 
 screen = turtle.Screen()
 screen.setup(550, 750)
