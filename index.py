@@ -30,8 +30,7 @@ def limitedFloatInput(prompt, upperLimit, lowerLimit=0):
 
 L_ = floatInput("L(mm) = ")
 while True:
-    beamType = intInput(
-        "Beam type?\n1. Simply Supported\n2. Overhanging\n3. Cantilever\n")
+    beamType = intInput("Beam type?\n1. Simply Supported\n2. Overhanging\n3. Cantilever\n")
     if beamType in [1, 2, 3]:
         break
     else:
@@ -39,8 +38,7 @@ while True:
 loads = []
 while True:
     while True:
-        loadType = intInput(
-            "Load type?\n1. concentrated load\n2. uniformly distributed load\n3. bending moment\n")
+        loadType = intInput("Load type?\n1. concentrated load\n2. uniformly distributed load\n3. bending moment\n")
         if loadType == 1:
             P_ = floatInput("P(N) = ")
             x_ = limitedFloatInput("x(mm) = ", L_)
