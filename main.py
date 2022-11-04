@@ -19,14 +19,14 @@ screen = turtle.Screen()
 screen.setup(550, 750)
 screen.setworldcoordinates(-5, 0, 105, 150)
 turtle.speed(0)
-
-beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 3)
+'''
+beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 1)
 _L = tryFloatInput("Beam Length", "L(mm) =", 1000, 0)
 loads = []
 while True:
     n = len(loads) + 1
     print("n =", n)
-    loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load\n3. Bending moment\nPlease enter an INTEGER", None, 1, 3)
+    loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load\n3. Bending moment\nPlease enter an INTEGER", None, 1, 1)
     if loadType == 1:
         _P = tryFloatInput(f"Load #{n}", "P(N) =")
         _x = tryFloatInput(f"Load #{n}", "x(mm) =", None, 0, _L)
@@ -50,12 +50,7 @@ print(beamType, _L, file=dataFile)
 for eachLoad in loads:
     print(" ".join(str(e) for e in eachLoad), file=dataFile)
 dataFile.close()
-
-
-# screen = turtle.Screen()
-# screen.setup(550, 750)
-# screen.setworldcoordinates(-5, 0, 105, 150)
-# turtle.speed(0)
+'''
 
 turtle.up()
 turtle.goto(-5, 0)
@@ -91,8 +86,10 @@ turtle.left(90)
 dataFile = open("test.txt", "r")
 lines = dataFile.readlines()
 dataFile.close()
-beamData = lines[0]
-loadsData = lines[1:]
+beamData = lines[0].split(" ")
+loadsData = (l.split(" ") for l in lines[1:])
+print("beamData = ", beamData)
+print("loadsData", loadsData)
 
 beamType = beamData[0]
 if beamType == "1": # simply supported
@@ -118,6 +115,13 @@ elif beamType == "2":
     print("Overhanging beam under development")
 elif beamType == "3":
     print("Cantilever beam under development")
+
+# def drawArrow(x, y):
+#     arrowPen = turtle.Turtle()
+#     arrowPen.up()
+#     arrowPen
+#     arrowPen.left(45)
+#     arrowPen.forward(2)
 
 screen.exitonclick()
 turtle.done()
