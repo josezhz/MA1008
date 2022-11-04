@@ -87,9 +87,9 @@ dataFile = open("test.txt", "r")
 lines = dataFile.readlines()
 dataFile.close()
 beamData = lines[0].split(" ")
-loadsData = (l.split(" ") for l in lines[1:])
+loadsData = [l.split(" ") for l in lines[1:]]
 print("beamData = ", beamData)
-print("loadsData", loadsData)
+print("loadsData =", loadsData)
 
 beamType = beamData[0]
 if beamType == "1": # simply supported
@@ -116,12 +116,22 @@ elif beamType == "2":
 elif beamType == "3":
     print("Cantilever beam under development")
 
-# def drawArrow(x, y):
-#     arrowPen = turtle.Turtle()
-#     arrowPen.up()
-#     arrowPen
-#     arrowPen.left(45)
-#     arrowPen.forward(2)
+def pLoad(x, y):
+    loadPen = turtle.Turtle()
+    loadPen.color("black")
+    loadPen.up()
+    loadPen.goto(x, y)
+    loadPen.down()
+    loadPen.left(45)
+    loadPen.forward(3)
+    loadPen.back(3)
+    loadPen.left(90)
+    loadPen.forward(3)
+    loadPen.back(3)
+    loadPen.right(45)
+    loadPen.forward(10)
+
+pLoad(float(loadsData[0][2])/10, 127)
 
 screen.exitonclick()
 turtle.done()
