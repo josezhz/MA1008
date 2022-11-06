@@ -20,13 +20,13 @@ screen.setup(550, 750)
 screen.setworldcoordinates(-5, 0, 105, 150)
 turtle.speed(0)
 '''
-beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 1)
+beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 2) # 3 under devepment
 _L = tryFloatInput("Beam Length", "L(mm) =", 1000, 0)
 loads = []
 while True:
     n = len(loads) + 1
     print("n =", n)
-    loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load\n3. Bending moment\nPlease enter an INTEGER", None, 1, 1)
+    loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load\n3. Bending moment\nPlease enter an INTEGER", None, 1, 2) # 3 under development
     if loadType == 1:
         _P = tryFloatInput(f"Load #{n}", "P(N) =")
         _x = tryFloatInput(f"Load #{n}", "x(mm) =", None, 0, _L)
@@ -52,6 +52,7 @@ for eachLoad in loads:
 dataFile.close()
 '''
 
+turtle.hideturtle()
 turtle.up()
 turtle.goto(-5, 0)
 turtle.down()
@@ -86,13 +87,22 @@ turtle.left(90)
 dataFile = open("test.txt", "r")
 lines = dataFile.readlines()
 dataFile.close()
-beamData = lines[0].split(" ")
-loadsData = [l.split(" ") for l in lines[1:]]
-print("beamData = ", beamData)
-print("loadsData =", loadsData)
+beamData = [float(e) for e in lines[0].split(" ")]
+pLoadsData = []
+wLoadsData = []
+mLoadsData = []
+for line in lines[1:]:
+    loadData = [float(e) for e in line.split(" ")]
+    if loadData[0] == 1: pLoadsData.append(loadData[1:])
+    elif loadData[0] == 2: wLoadsData.append(loadData[1:])
+    elif loadData[0] == 3: mLoadsData.append(loadData[1:])
+print("beam data:", beamData)
+print("P loads data:", pLoadsData)
+print("w loads data:", wLoadsData)
+print("M loads data:", mLoadsData)
 
 beamType = beamData[0]
-if beamType == "1": # simply supported
+if beamType == 1: # simply supported
     turtle.begin_fill()
     turtle.right(120)
     turtle.forward(5)
@@ -111,28 +121,55 @@ if beamType == "1": # simply supported
     turtle.circle(2.5)
     turtle.end_fill()
     turtle.right(180)
-elif beamType == "2":
+elif beamType == 2:
     print("Overhanging beam under development")
-elif beamType == "3":
+elif beamType == 3:
     print("Cantilever beam under development")
 
-def pLoad(x, y):
+def pLoad(x):
     loadPen = turtle.Turtle()
     loadPen.hideturtle()
-    loadPen.color("black")
     loadPen.up()
-    loadPen.goto(x, y)
+    loadPen.goto(x/10, 137)
+    loadPen.right(90)
+    loadPen.showturtle()
     loadPen.down()
-    loadPen.left(45)
-    loadPen.forward(3)
-    loadPen.back(3)
-    loadPen.left(90)
-    loadPen.forward(3)
-    loadPen.back(3)
-    loadPen.right(45)
     loadPen.forward(10)
 
-pLoad(float(loadsData[0][2])/10, 127)
+def wLoad(x1, x2):
+    loadPen1 = turtle.Turtle()
+    loadPen1.hideturtle()
+    loadPen1.up()
+    loadPen1.goto(x1/10, 132)
+    loadPen1.right(90)
+    loadPen1.showturtle()
+    loadPen1.down()
+    loadPen1.forward(5)
+    loadPen2 = turtle.Turtle()
+    loadPen2.hideturtle()
+    loadPen2.up()
+    loadPen2.goto(x1/10, 132)
+    loadPen2.right(90)
+    loadPen2.showturtle()
+    loadPen2.down()
+    loadPen2.goto(x2/10, 132)
+    loadPen2.forward(5)
+    loadPen3 = turtle.Turtle()
+    loadPen3.hideturtle()
+    loadPen3.up()
+    loadPen3.goto((x1+x2)/20, 132)
+    loadPen3.right(90)
+    loadPen3.showturtle()
+    loadPen3.down()
+    loadPen3.forward(5)
+
+
+for p in pLoadsData:
+    pLoad(p[1])
+for w in wLoadsData:
+    wLoad(w[1], w[2])
+
+
 
 screen.exitonclick()
 turtle.done()
