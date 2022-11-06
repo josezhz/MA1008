@@ -118,6 +118,7 @@ elif beamType == "3":
 
 def pLoad(x, y):
     loadPen = turtle.Turtle()
+    loadPen.hideturtle()
     loadPen.color("black")
     loadPen.up()
     loadPen.goto(x, y)
