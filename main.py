@@ -16,8 +16,8 @@ def tryFloatInput(title, prompt, default=None, minval=0, maxval=None):
             print("Please enter a NUMBER")
 
 screen = turtle.Screen()
-screen.setup(550, 750)
-screen.setworldcoordinates(-5, 0, 105, 150)
+screen.setup(500, 750)
+screen.setworldcoordinates(-10, 0, 110, 180)
 turtle.speed(0)
 '''
 beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 2) # 3 under devepment
@@ -60,23 +60,23 @@ dataFile.close()
 
 turtle.hideturtle()
 turtle.up()
-turtle.goto(-5, 0)
+turtle.goto(-10, 0)
 turtle.down()
-turtle.goto(105, 0)
-turtle.goto(105, 150)
-turtle.goto(-5, 150)
-turtle.goto(-5, 0)
+turtle.goto(110, 0)
+turtle.goto(110, 180)
+turtle.goto(-10, 180)
+turtle.goto(-10, 0)
 
 turtle.up()
-turtle.goto(-5, 100)
+turtle.goto(-10, 120)
 turtle.down()
-turtle.forward(110)
+turtle.forward(120)
 turtle.up()
-turtle.goto(-5, 50)
+turtle.goto(-10, 60)
 turtle.down()
-turtle.forward(110)
+turtle.forward(120)
 turtle.up()
-turtle.goto(0, 123)
+turtle.goto(0, 148)
 turtle.down()
 turtle.fillcolor("lightgray")
 turtle.begin_fill()
@@ -102,6 +102,7 @@ for line in lines[1:]:
     if loadData[0] == 1: pLoadsData.append(loadData[1:])
     elif loadData[0] == 2: wLoadsData.append(loadData[1:])
     elif loadData[0] == 3: mLoadsData.append(loadData[1:])
+pLoadsData.sort(key=lambda l: l[1])
 print("beam data:", beamData)
 print("P loads data:", pLoadsData)
 print("w loads data:", wLoadsData)
@@ -111,9 +112,10 @@ F_B = (sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100)*((w[1]+w[
 print(F_B)
 F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoadsData) - F_B
 print(F_A)
-
+L = beamData[1]
 beamType = beamData[0]
 if beamType in [1, 2]: # simply supported & overhanging
+    # Support A
     turtle.begin_fill()
     turtle.right(120)
     turtle.forward(5)
@@ -123,7 +125,8 @@ if beamType in [1, 2]: # simply supported & overhanging
     turtle.forward(5)
     turtle.end_fill()
     turtle.right(120)
-
+    turtle.write("A", align="right")
+    # Support B
     turtle.up()
     turtle.forward(100 if beamType == 1 else beamData[2]/beamData[1]*100)
     turtle.down()
@@ -132,24 +135,26 @@ if beamType in [1, 2]: # simply supported & overhanging
     turtle.circle(2.5)
     turtle.end_fill()
     turtle.right(180)
+    turtle.write("B", align="right")
 elif beamType == 3:
     print("Cantilever beam under development")
 
-def pLoad(x):
+def pLoad(p):
     loadPen = turtle.Turtle()
     loadPen.hideturtle()
     loadPen.up()
-    loadPen.goto(x/10, 137)
+    loadPen.goto(p[1]/L*100, 162)
     loadPen.right(90)
     loadPen.showturtle()
     loadPen.down()
+    loadPen.write(f"{p[0]}N", align="center")
     loadPen.forward(10)
 
-def wLoad(x1, x2):
+def wLoad(w):
     loadPen1 = turtle.Turtle()
     loadPen1.hideturtle()
     loadPen1.up()
-    loadPen1.goto(x1/10, 132)
+    loadPen1.goto(w[1]/L*100, 157)
     loadPen1.right(90)
     loadPen1.showturtle()
     loadPen1.down()
@@ -157,28 +162,57 @@ def wLoad(x1, x2):
     loadPen2 = turtle.Turtle()
     loadPen2.hideturtle()
     loadPen2.up()
-    loadPen2.goto(x1/10, 132)
+    loadPen2.goto(w[1]/10, 157)
     loadPen2.right(90)
     loadPen2.showturtle()
     loadPen2.down()
-    loadPen2.goto(x2/10, 132)
+    loadPen2.goto(w[2]/10, 157)
     loadPen2.forward(5)
     loadPen3 = turtle.Turtle()
     loadPen3.hideturtle()
     loadPen3.up()
-    loadPen3.goto((x1+x2)/20, 132)
+    loadPen3.goto((w[1]+w[2])/20, 157)
     loadPen3.right(90)
     loadPen3.showturtle()
     loadPen3.down()
+    loadPen3.write(f"{w[0]}N/m", align="center")
     loadPen3.forward(5)
 
-
 for p in pLoadsData:
-    pLoad(p[1])
+    pLoad(p)
 for w in wLoadsData:
-    wLoad(w[1], w[2])
+    wLoad(w)
 
+# SFD
+sfd_y = turtle.Turtle()
+sfd_y.up()
+sfd_y.left(90)
+sfd_y.goto(0, 63)
+sfd_y.down()
+sfd_y.goto(0, 117)
+sfd_y.write("V/N")
+sfd_o_y = F_B/(F_A + F_B)*50 + 65
+sfd_x = turtle.Turtle()
+sfd_x.up()
+sfd_x.goto(0, sfd_o_y)
+sfd_x.down()
+sfd_x.forward(103)
+sfd_x.write("x/mm")
 
+sfd = turtle.Turtle()
+sfd.up()
+sfd.hideturtle()
+sfd.goto(0, 115)
+sfd.down()
+V = F_A
+pLoadsData.append([-F_B, L])
+for i in range(len(pLoadsData)):
+    x = pLoadsData[i][1]/L*100
+    sfd.forward((x-sfd.xcor())/2)
+    sfd.write("{:.1f}".format(V), align="center")
+    sfd.goto(x, 65+(V+F_B)/(F_A+F_B)*50)
+    V -= pLoadsData[i][0]
+    sfd.goto(x, 65+(V+F_B)/(F_A+F_B)*50)
 
 screen.exitonclick()
 turtle.done()
