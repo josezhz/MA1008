@@ -212,7 +212,14 @@ def plotSFD():
     sfd_x.goto(0, sfd_o_y)
     sfd_x.down()
     sfd_x.write(0, align="right")
-    sfd_x.forward(103)
+    for p in pLoadsData:
+        x = p[1]
+        sfd_x.goto(x/L*100, sfd_o_y)
+        sfd_x.goto(x/L*100, sfd_o_y+1)
+        sfd_x.goto(x/L*100, sfd_o_y-1)
+        sfd_x.goto(x/L*100, sfd_o_y)
+        sfd_x.write(x/L, align="right")
+    sfd_x.goto(103, sfd_o_y)
     sfd_x.write("x/mm")
     # SFD
     sfd = turtle.Turtle()
