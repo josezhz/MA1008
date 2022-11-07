@@ -57,61 +57,46 @@ for eachLoad in loads:
     print(" ".join(str(e) for e in eachLoad), file=dataFile)
 dataFile.close()
 '''
+def init():
+    turtle.hideturtle()
+    turtle.up()
+    turtle.goto(-10, 0)
+    turtle.down()
+    turtle.goto(110, 0)
+    turtle.goto(110, 180)
+    turtle.goto(-10, 180)
+    turtle.goto(-10, 0)
 
-turtle.hideturtle()
-turtle.up()
-turtle.goto(-10, 0)
-turtle.down()
-turtle.goto(110, 0)
-turtle.goto(110, 180)
-turtle.goto(-10, 180)
-turtle.goto(-10, 0)
-
-turtle.up()
-turtle.goto(-10, 120)
-turtle.down()
-turtle.forward(120)
-turtle.up()
-turtle.goto(-10, 60)
-turtle.down()
-turtle.forward(120)
-turtle.up()
-turtle.goto(0, 148)
-turtle.down()
-turtle.fillcolor("lightgray")
-turtle.begin_fill()
-turtle.forward(100)
-turtle.left(90)
-turtle.forward(4)
-turtle.left(90)
-turtle.forward(100)
-turtle.left(90)
-turtle.forward(4)
-turtle.end_fill()
-turtle.left(90)
+    turtle.up()
+    turtle.goto(-10, 120)
+    turtle.down()
+    turtle.forward(120)
+    turtle.up()
+    turtle.goto(-10, 60)
+    turtle.down()
+    turtle.forward(120)
+    turtle.up()
+    turtle.goto(0, 148)
+    turtle.down()
+    turtle.fillcolor("lightgray")
+    turtle.begin_fill()
+    turtle.forward(100)
+    turtle.left(90)
+    turtle.forward(4)
+    turtle.left(90)
+    turtle.forward(100)
+    turtle.left(90)
+    turtle.forward(4)
+    turtle.end_fill()
+    turtle.left(90)
+init()
 
 dataFile = open("test.txt", "r")
 lines = dataFile.readlines()
 dataFile.close()
-beamData = [float(e) for e in lines[0].split(" ")]
-pLoadsData = []
-wLoadsData = []
-mLoadsData = []
-for line in lines[1:]:
-    loadData = [float(e) for e in line.split(" ")]
-    if loadData[0] == 1: pLoadsData.append(loadData[1:])
-    elif loadData[0] == 2: wLoadsData.append(loadData[1:])
-    elif loadData[0] == 3: mLoadsData.append(loadData[1:])
-pLoadsData.sort(key=lambda l: l[1])
-print("beam data:", beamData)
-print("P loads data:", pLoadsData)
-print("w loads data:", wLoadsData)
-print("M loads data:", mLoadsData)
 
-F_B = (sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100)*((w[1]+w[2])/2) for w in wLoadsData)) / (beamData[2 if beamData[0] == 2 else 1])
-print(F_B)
-F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoadsData) - F_B
-print(F_A)
+beamData = [float(e) for e in lines[0].split(" ")]
+print("beam data:", beamData)
 L = beamData[1]
 beamType = beamData[0]
 if beamType in [1, 2]: # simply supported & overhanging
@@ -139,6 +124,15 @@ if beamType in [1, 2]: # simply supported & overhanging
 elif beamType == 3:
     print("Cantilever beam under development")
 
+pLoadsData = []
+wLoadsData = []
+mLoadsData = []
+for line in lines[1:]:
+    loadData = [float(e) for e in line.split(" ")]
+    if loadData[0] == 1: pLoadsData.append(loadData[1:])
+    elif loadData[0] == 2: wLoadsData.append(loadData[1:])
+    elif loadData[0] == 3: mLoadsData.append(loadData[1:])
+pLoadsData.sort(key=lambda l: l[1])
 def pLoad(p):
     loadPen = turtle.Turtle()
     loadPen.hideturtle()
@@ -149,7 +143,6 @@ def pLoad(p):
     loadPen.down()
     loadPen.write(f"{p[0]}N", align="center")
     loadPen.forward(10)
-
 def wLoad(w):
     loadPen1 = turtle.Turtle()
     loadPen1.hideturtle()
@@ -177,42 +170,65 @@ def wLoad(w):
     loadPen3.down()
     loadPen3.write(f"{w[0]}N/m", align="center")
     loadPen3.forward(5)
-
 for p in pLoadsData:
     pLoad(p)
 for w in wLoadsData:
     wLoad(w)
 
-# SFD
-sfd_y = turtle.Turtle()
-sfd_y.up()
-sfd_y.left(90)
-sfd_y.goto(0, 63)
-sfd_y.down()
-sfd_y.goto(0, 117)
-sfd_y.write("V/N")
-sfd_o_y = F_B/(F_A + F_B)*50 + 65
-sfd_x = turtle.Turtle()
-sfd_x.up()
-sfd_x.goto(0, sfd_o_y)
-sfd_x.down()
-sfd_x.forward(103)
-sfd_x.write("x/mm")
-
-sfd = turtle.Turtle()
-sfd.up()
-sfd.hideturtle()
-sfd.goto(0, 115)
-sfd.down()
+F_B = (sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100)*((w[1]+w[2])/2) for w in wLoadsData)) / (beamData[2 if beamData[0] == 2 else 1])
+print("F_B =" ,F_B)
+F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoadsData) - F_B
+print("F_A =", F_A)
+pLoadsData.append([-F_B, L if beamType == 1 else beamData[2]])
+pLoadsData.sort(key=lambda l: l[1])
+print("P loads data:", pLoadsData)
+print("w loads data:", wLoadsData)
+print("M loads data:", mLoadsData)
 V = F_A
-pLoadsData.append([-F_B, L])
-for i in range(len(pLoadsData)):
-    x = pLoadsData[i][1]/L*100
-    sfd.forward((x-sfd.xcor())/2)
-    sfd.write("{:.1f}".format(V), align="center")
-    sfd.goto(x, 65+(V+F_B)/(F_A+F_B)*50)
-    V -= pLoadsData[i][0]
-    sfd.goto(x, 65+(V+F_B)/(F_A+F_B)*50)
+Vmax, Vmin = F_A, F_A
+for p in pLoadsData:
+    V -= p[0]
+    if V > Vmax: Vmax = V
+    if V < Vmin: Vmin = V
+print("Vmax =", Vmax)
+print("Vmin =", Vmin)
+Vrange = Vmax-Vmin
+
+# Shear Force Diagram
+def plotSFD():
+    # vertical axis
+    sfd_y = turtle.Turtle()
+    sfd_y.up()
+    sfd_y.left(90)
+    sfd_y.goto(0, 63)
+    sfd_y.down()
+    sfd_y.goto(0, 117)
+    sfd_y.write("V/N", align="right")
+    sfd_y.forward(1)
+    # horizontal axis
+    sfd_o_y = -Vmin/Vrange*50 + 65
+    sfd_x = turtle.Turtle()
+    sfd_x.up()
+    sfd_x.goto(0, sfd_o_y)
+    sfd_x.down()
+    sfd_x.write(0, align="right")
+    sfd_x.forward(103)
+    sfd_x.write("x/mm")
+    # SFD
+    sfd = turtle.Turtle()
+    sfd.up()
+    sfd.hideturtle()
+    sfd.goto(0, 115)
+    sfd.down()
+    V = F_A
+    for i in range(len(pLoadsData)):
+        x = pLoadsData[i][1]/L*100
+        sfd.forward((x-sfd.xcor())/2)
+        sfd.write("{:.1f}".format(V), align="center")
+        sfd.goto(x, 65+(V-Vmin)/Vrange*50)
+        V -= pLoadsData[i][0]
+        sfd.goto(x, 65+(V-Vmin)/Vrange*50)
+plotSFD()
 
 screen.exitonclick()
 turtle.done()
