@@ -22,6 +22,12 @@ turtle.speed(0)
 '''
 beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 2) # 3 under devepment
 _L = tryFloatInput("Beam Length", "L(mm) =", 1000, 0)
+if beamType == 2:
+    global _x_B
+    _x_B = tryFloatInput("Support Position", "x_B(mm) =", None, 0, _L)
+beamData = [beamType, _L]
+if beamType == 2:
+    beamData.append(_x_B)
 loads = []
 while True:
     n = len(loads) + 1
@@ -46,7 +52,7 @@ print("_L =", _L, "beamType =", beamType)
 print("loads =", loads)
 
 dataFile = open("data.txt", "w")
-print(beamType, _L, file=dataFile)
+print(" ".join(str(e) for e in beamData), file=dataFile)
 for eachLoad in loads:
     print(" ".join(str(e) for e in eachLoad), file=dataFile)
 dataFile.close()
@@ -101,8 +107,13 @@ print("P loads data:", pLoadsData)
 print("w loads data:", wLoadsData)
 print("M loads data:", mLoadsData)
 
+F_B = (sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100)*((w[1]+w[2])/2) for w in wLoadsData)) / (beamData[2 if beamData[0] == 2 else 1])
+print(F_B)
+F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoadsData) - F_B
+print(F_A)
+
 beamType = beamData[0]
-if beamType == 1: # simply supported
+if beamType in [1, 2]: # simply supported & overhanging
     turtle.begin_fill()
     turtle.right(120)
     turtle.forward(5)
@@ -114,15 +125,13 @@ if beamType == 1: # simply supported
     turtle.right(120)
 
     turtle.up()
-    turtle.forward(100)
+    turtle.forward(100 if beamType == 1 else beamData[2]/beamData[1]*100)
     turtle.down()
     turtle.right(180)
     turtle.begin_fill()
     turtle.circle(2.5)
     turtle.end_fill()
     turtle.right(180)
-elif beamType == 2:
-    print("Overhanging beam under development")
 elif beamType == 3:
     print("Cantilever beam under development")
 
