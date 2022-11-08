@@ -230,12 +230,12 @@ def plotSFD():
     sfd.down()
     V = F_A
     for i in range(len(pLoadsData)):
-        x = pLoadsData[i][1]/L*100
-        sfd.goto((sfd.xcor()+x)/2, sfd.ycor())
+        xcor = pLoadsData[i][1]/L*100
+        sfd.goto((sfd.xcor()+xcor)/2, sfd.ycor())
         sfd.write("{:.1f}".format(V), align="center")
-        sfd.goto(x, sfd.ycor())
+        sfd.goto(xcor, sfd.ycor())
         V -= pLoadsData[i][0]
-        sfd.goto(x, 65+(V-Vmin)/Vrange*50)
+        sfd.goto(xcor, 65+(V-Vmin)/Vrange*50)
 plotSFD()
 
 screen.exitonclick()
