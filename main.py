@@ -19,44 +19,46 @@ screen = turtle.Screen()
 screen.setup(500, 750)
 screen.setworldcoordinates(-10, 0, 110, 180)
 turtle.speed(0)
-'''
-beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 2) # 3 under devepment
-_L = tryFloatInput("Beam Length", "L(mm) =", 1000, 0)
-if beamType == 2:
-    global _x_B
-    _x_B = tryFloatInput("Support Position", "x_B(mm) =", None, 0, _L)
-beamData = [beamType, _L]
-if beamType == 2:
-    beamData.append(_x_B)
-loads = []
-while True:
-    n = len(loads) + 1
-    print("n =", n)
-    loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load\n3. Bending moment\nPlease enter an INTEGER", 1, 1) # 2&3 under development
-    if loadType == 1:
-        _P = tryFloatInput(f"Load #{n}", "P(N) =")
-        _x = tryFloatInput(f"Load #{n}", "x(mm) =", None, 0, _L)
-        loads.append([loadType, _P, _x])
-    elif loadType == 2:
-        _w = tryFloatInput(f"Load #{n}", "w(N/m) =")
-        _x1 = tryFloatInput(f"Load #{n}", "x1(mm) =", None, 0, _L)
-        _x2 = tryFloatInput(f"Load #{n}", "x2(mm) =", None, _x1, _L)
-        loads.append([loadType, _w, _x1, _x2])
-    elif loadType == 3:
-        _M = tryFloatInput(f"Load #{n}", "M(Nm) =")
-        _x = tryFloatInput(f"Load #{n}", "x(mm) =", None, 0, _L)
-        loads.append([loadType, _M, _x])
-    if not tryIntInput(f"Add Load #{n+1}?", "1: Yes\n0: No", None, 0, 1):
-        break
-print("_L =", _L, "beamType =", beamType)
-print("loads =", loads)
 
-dataFile = open("data.txt", "w")
-print(" ".join(str(e) for e in beamData), file=dataFile)
-for eachLoad in loads:
-    print(" ".join(str(e) for e in eachLoad), file=dataFile)
-dataFile.close()
-'''
+def getData():
+    beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 2) # 3 under devepment
+    _L = tryFloatInput("Beam Length", "L(mm) =", 1000, 0)
+    if beamType == 2:
+        global _x_B
+        _x_B = tryFloatInput("Support Position", "x_B(mm) =", None, 0, _L)
+    beamData = [beamType, _L]
+    if beamType == 2:
+        beamData.append(_x_B)
+    loads = []
+    while True:
+        n = len(loads) + 1
+        print("n =", n)
+        loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load\n3. Bending moment\nPlease enter an INTEGER", 1, 1) # 2&3 under development
+        if loadType == 1:
+            _P = tryFloatInput(f"Load #{n}", "P(N) =")
+            _x = tryFloatInput(f"Load #{n}", "x(mm) =", None, 0, _L)
+            loads.append([loadType, _P, _x])
+        elif loadType == 2:
+            _w = tryFloatInput(f"Load #{n}", "w(N/m) =")
+            _x1 = tryFloatInput(f"Load #{n}", "x1(mm) =", None, 0, _L)
+            _x2 = tryFloatInput(f"Load #{n}", "x2(mm) =", None, _x1, _L)
+            loads.append([loadType, _w, _x1, _x2])
+        elif loadType == 3:
+            _M = tryFloatInput(f"Load #{n}", "M(Nm) =")
+            _x = tryFloatInput(f"Load #{n}", "x(mm) =", None, 0, _L)
+            loads.append([loadType, _M, _x])
+        if not tryIntInput(f"Add Load #{n+1}?", "1: Yes\n0: No", None, 0, 1):
+            break
+    print("_L =", _L, "beamType =", beamType)
+    print("loads =", loads)
+
+    dataFile = open("data.txt", "w")
+    print(" ".join(str(e) for e in beamData), file=dataFile)
+    for eachLoad in loads:
+        print(" ".join(str(e) for e in eachLoad), file=dataFile)
+    dataFile.close()
+# getData()
+
 def init():
     turtle.hideturtle()
     turtle.up()
@@ -179,23 +181,23 @@ F_B = (sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100)*((w[1]+w[
 print("F_B =" ,F_B)
 F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoadsData) - F_B
 print("F_A =", F_A)
+pLoadsData.append([-F_A, 0])
 pLoadsData.append([-F_B, L if beamType == 1 else beamData[2]])
 pLoadsData.sort(key=lambda l: l[1])
 print("P loads data:", pLoadsData)
 print("w loads data:", wLoadsData)
 print("M loads data:", mLoadsData)
-V = F_A
-Vmax, Vmin = F_A, F_A
-for p in pLoadsData:
-    V -= p[0]
-    if V > Vmax: Vmax = V
-    if V < Vmin: Vmin = V
-print("Vmax =", Vmax)
-print("Vmin =", Vmin)
-Vrange = Vmax-Vmin
 
 # Shear Force Diagram
 def plotSFD():
+    # calculate Vmax & Vmin
+    V, Vmax, Vmin = F_A, F_A, F_A
+    for p in pLoadsData[1:]:
+        V -= p[0]
+        if V > Vmax: Vmax = V
+        if V < Vmin: Vmin = V
+    print("Vmax Vmin =", Vmax, Vmin)
+    Vrange = Vmax-Vmin
     # vertical axis
     sfd_y = turtle.Turtle()
     sfd_y.up()
@@ -206,21 +208,26 @@ def plotSFD():
     sfd_y.write("V/N", align="right")
     sfd_y.forward(1)
     # horizontal axis
-    sfd_o_y = -Vmin/Vrange*50 + 65
+    ycor_o = -Vmin/Vrange*50 + 65
     sfd_x = turtle.Turtle()
     sfd_x.up()
-    sfd_x.goto(0, sfd_o_y)
+    sfd_x.goto(0, ycor_o)
     sfd_x.down()
     sfd_x.write(0, align="right")
-    for p in pLoadsData:
+    for p in pLoadsData[1:]:
         x = p[1]
         xcor = x/L*100
-        sfd_x.goto(xcor, sfd_o_y)
-        sfd_x.goto(xcor, sfd_o_y+1)
-        sfd_x.goto(xcor, sfd_o_y-1)
-        sfd_x.goto(xcor, sfd_o_y)
+        sfd_x.goto(xcor, ycor_o)
+        sfd_x.goto(xcor, ycor_o+0.5)
+        sfd_x.goto(xcor, ycor_o-0.5)
+        sfd_x.goto(xcor, ycor_o)
         sfd_x.write(x, align="right")
-    sfd_x.goto(103, sfd_o_y)
+    sfd_x.goto(100, ycor_o)
+    sfd_x.goto(100, ycor_o+0.5)
+    sfd_x.goto(100, ycor_o-0.5)
+    sfd_x.goto(100, ycor_o)
+    sfd_x.write(L, align="right")
+    sfd_x.goto(103, ycor_o)
     sfd_x.write("x/mm")
     # SFD
     sfd = turtle.Turtle()
@@ -229,14 +236,76 @@ def plotSFD():
     sfd.goto(0, 115)
     sfd.down()
     V = F_A
-    for i in range(len(pLoadsData)):
-        xcor = pLoadsData[i][1]/L*100
+    for l in pLoadsData[1:]:
+        xcor = l[1]/L*100
         sfd.goto((sfd.xcor()+xcor)/2, sfd.ycor())
         sfd.write("{:.1f}".format(V), align="center")
         sfd.goto(xcor, sfd.ycor())
-        V -= pLoadsData[i][0]
-        sfd.goto(xcor, 65+(V-Vmin)/Vrange*50)
+        V -= l[0]
+        sfd.goto(xcor, V/Vrange*50 + ycor_o)
 plotSFD()
+
+# Bending Moment Diagram
+def plotBMD():
+    # calculate Mmax & Mmin
+    V = F_A
+    M, Mmax, Mmin = 0, 0, 0
+    for i in range(len(pLoadsData)-1):
+        M += V*(pLoadsData[i+1][1]-pLoadsData[i][1])/1000
+        if M > Mmax: Mmax = M
+        if M < Mmin: Mmin = M
+        V -= pLoadsData[i+1][0]
+        print(V)
+    print("Mmax Mmin =", Mmax, Mmin)
+    Mrange = Mmax - Mmin
+    # vertical axis
+    bmd_y = turtle.Turtle()
+    bmd_y.up()
+    bmd_y.left(90)
+    bmd_y.goto(0, 3)
+    bmd_y.down()
+    bmd_y.goto(0, 57)
+    bmd_y.write("M/Nm", align="right")
+    bmd_y.forward(1)
+    # horizontal axis
+    ycor_o = -Mmin/Mrange*50 + 5
+    bmd_x = turtle.Turtle()
+    bmd_x.up()
+    bmd_x.goto(0, ycor_o)
+    bmd_x.down()
+    bmd_x.write(0, align="right")
+    for p in pLoadsData[1:]:
+        x = p[1]
+        xcor = x/L*100
+        bmd_x.goto(xcor, ycor_o)
+        bmd_x.goto(xcor, ycor_o+0.5)
+        bmd_x.goto(xcor, ycor_o-0.5)
+        bmd_x.goto(xcor, ycor_o)
+        bmd_x.write(x, align="right")
+    bmd_x.goto(100, ycor_o)
+    bmd_x.goto(100, ycor_o+0.5)
+    bmd_x.goto(100, ycor_o-0.5)
+    bmd_x.goto(100, ycor_o)
+    bmd_x.write(L, align="right")
+    bmd_x.goto(103, ycor_o)
+    bmd_x.write("x/mm")
+    # BMD
+    bmd = turtle.Turtle()
+    bmd.up()
+    bmd.hideturtle()
+    bmd.goto(0, ycor_o)
+    bmd.down()
+    V = F_A
+    M = 0
+    for i in range(len(pLoadsData)-1):
+        xcor = pLoadsData[i+1][1]/L*100
+        M += V*(pLoadsData[i+1][1]-pLoadsData[i][1])/1000
+        ycor = M/Mrange*50 + ycor_o
+        bmd.goto(xcor, ycor)
+        if M != 0:
+            bmd.write("{:.1f}".format(M), align="center")
+        V -= pLoadsData[i+1][0]
+plotBMD()
 
 screen.exitonclick()
 turtle.done()
