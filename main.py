@@ -32,7 +32,7 @@ loads = []
 while True:
     n = len(loads) + 1
     print("n =", n)
-    loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load\n3. Bending moment\nPlease enter an INTEGER", None, 1, 2) # 3 under development
+    loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load\n3. Bending moment\nPlease enter an INTEGER", 1, 1) # 2&3 under development
     if loadType == 1:
         _P = tryFloatInput(f"Load #{n}", "P(N) =")
         _x = tryFloatInput(f"Load #{n}", "x(mm) =", None, 0, _L)
