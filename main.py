@@ -214,11 +214,12 @@ def plotSFD():
     sfd_x.write(0, align="right")
     for p in pLoadsData:
         x = p[1]
-        sfd_x.goto(x/L*100, sfd_o_y)
-        sfd_x.goto(x/L*100, sfd_o_y+1)
-        sfd_x.goto(x/L*100, sfd_o_y-1)
-        sfd_x.goto(x/L*100, sfd_o_y)
-        sfd_x.write(x/L, align="right")
+        xcor = x/L*100
+        sfd_x.goto(xcor, sfd_o_y)
+        sfd_x.goto(xcor, sfd_o_y+1)
+        sfd_x.goto(xcor, sfd_o_y-1)
+        sfd_x.goto(xcor, sfd_o_y)
+        sfd_x.write(x, align="right")
     sfd_x.goto(103, sfd_o_y)
     sfd_x.write("x/mm")
     # SFD
@@ -230,9 +231,9 @@ def plotSFD():
     V = F_A
     for i in range(len(pLoadsData)):
         x = pLoadsData[i][1]/L*100
-        sfd.forward((x-sfd.xcor())/2)
+        sfd.goto((sfd.xcor()+x)/2, sfd.ycor())
         sfd.write("{:.1f}".format(V), align="center")
-        sfd.goto(x, 65+(V-Vmin)/Vrange*50)
+        sfd.goto(x, sfd.ycor())
         V -= pLoadsData[i][0]
         sfd.goto(x, 65+(V-Vmin)/Vrange*50)
 plotSFD()
