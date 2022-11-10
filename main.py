@@ -183,11 +183,27 @@ F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoads
 print("F_A =", F_A)
 pLoadsData.append([-F_A, 0])
 pLoadsData.append([-F_B, L if beamType == 1 else beamData[2]])
-pLoadsData.sort(key=lambda l: l[1])
+def getIndex1(aList):
+    return aList[1]
+pLoadsData.sort(key=getIndex1)
 print("P loads data:", pLoadsData)
 print("w loads data:", wLoadsData)
 print("M loads data:", mLoadsData)
 
+def return0IfNegative(x):
+    return 0 if x<0 else x
+def calculateV(x):
+    V = 0
+    for p in pLoadsData:
+        V -= p[0]*return0IfNegative[x-p[1]]**0
+    return V
+def calculateM(x):
+    M = 0
+    for p in pLoadsData:
+        M -= p[0]*return0IfNegative(x-p[1])/1000
+    # for w in wLoadsData:
+    #     M -= w[0]/2*return0IfNegative(x-w[1])**2 - w[0]/2*return0IfNegative(x-w[2])**2
+    return M
 # Shear Force Diagram
 def plotSFD():
     # calculate Vmax & Vmin
@@ -302,9 +318,17 @@ def plotBMD():
         M += V*(pLoadsData[i+1][1]-pLoadsData[i][1])/1000
         ycor = M/Mrange*50 + ycor_o
         bmd.goto(xcor, ycor)
-        if M != 0:
+        if M > 0:
             bmd.write("{:.1f}".format(M), align="center")
+        elif M < 0:
+            bmd.up()
+            bmd.goto(bmd.xcor(), bmd.ycor()-4)
+            bmd.write("{:.1f}".format(M), align="center")
+            bmd.goto(bmd.xcor(), bmd.ycor()+4)
+            bmd.down()
         V -= pLoadsData[i+1][0]
+    for i in range(101):
+        bmd.goto(i, calculateM(i/100*L)/Mrange*50+ycor_o)
 plotBMD()
 
 screen.exitonclick()
