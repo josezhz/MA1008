@@ -122,7 +122,14 @@ if beamType in [1, 2]: # simply supported & overhanging
     turtle.right(180)
     turtle.write("B", align="right")
 elif beamType == 3:
-    print("Cantilever beam under development")
+    turtle.up()
+    turtle.goto(100, 175)
+    turtle.down()
+    for i in range(175, 125, -5):
+        turtle.goto(100, i)
+        turtle.goto(105, i - 5)
+        turtle.goto(100, i)
+    turtle.goto(100, 125)
 
 pLoadsData = []
 wLoadsData = []
@@ -132,17 +139,43 @@ for line in lines[1:]:
     if loadData[0] == 1: pLoadsData.append(loadData[1:])
     elif loadData[0] == 2: wLoadsData.append(loadData[1:])
     elif loadData[0] == 3: mLoadsData.append(loadData[1:])
-pLoadsData.sort(key=lambda l: l[1])
+if beamType in [1, 2]:
+    F_B = (sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*(w[2]-w[1])/1000*(w[1]+w[2])/2 for w in wLoadsData)) / beamData[2 if beamType == 2 else 1]
+    print("F_B =" ,F_B)
+    F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoadsData) - F_B
+    print("F_A =", F_A)
+    pLoadsData.append([-F_A, 0])
+    pLoadsData.append([-F_B, L if beamType == 1 else beamData[2]])
+elif beamType == 3:
+    F_R = sum(p[0] for p in pLoadsData) # upwards
+    M_R = sum(p[0]*(L-p[1]) for p in pLoadsData)/1000 # clockwise
+    pLoadsData.append([-F_R, L])
+    pLoadsData.append([0, 0])
+    mLoadsData.append([-M_R, L])
+def getIndex1(aList):
+    return aList[1]
+pLoadsData.sort(key=getIndex1)
 def drawPLoad(p):
+    P = p[0]
+    x = p[1]
     loadPen = turtle.Turtle()
     loadPen.hideturtle()
     loadPen.up()
-    loadPen.goto(p[1]/L*100, 162)
-    loadPen.right(90)
-    loadPen.showturtle()
-    loadPen.down()
-    loadPen.write(f"{p[0]}N", align="center")
-    loadPen.forward(10)
+    if P > 0:
+        loadPen.goto(x/L*100, 162)
+        loadPen.right(90)
+        loadPen.showturtle()
+        loadPen.down()
+        loadPen.write(f"{P}N", align="center")
+        loadPen.forward(10)
+    elif P < 0:
+        loadPen.goto(x/L*100, 134)
+        loadPen.write(f"{-P}N", align="center")
+        loadPen.left(90)
+        loadPen.showturtle()
+        loadPen.forward(4)
+        loadPen.down()
+        loadPen.forward(10)
 def drawWLoad(w):
     loadPen1 = turtle.Turtle()
     loadPen1.hideturtle()
@@ -170,19 +203,32 @@ def drawWLoad(w):
     loadPen3.down()
     loadPen3.write(f"{w[0]}N/m", align="center")
     loadPen3.forward(5)
+def drawMLoad(m):
+    M = m[0]
+    x = m[1]
+    loadPen = turtle.Turtle()
+    loadPen.hideturtle()
+    loadPen.up()
+    loadPen.goto(x/L*100, 149.5)
+    loadPen.begin_fill()
+    loadPen.circle(.5)
+    loadPen.end_fill()
+    loadPen.goto(x/L*100, 155)
+    loadPen.left(180)
+    loadPen.down()
+    loadPen.circle(5, -180)
+    loadPen.left(180)
+    loadPen.showturtle()
+    print("M drawn")
 for p in pLoadsData:
     drawPLoad(p)
 for w in wLoadsData:
     drawWLoad(w)
-F_B = (sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*(w[2]-w[1])/1000*(w[1]+w[2])/2 for w in wLoadsData)) / (beamData[2 if beamType == 2 else 1])
-print("F_B =" ,F_B)
-F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoadsData) - F_B
-print("F_A =", F_A)
-pLoadsData.append([-F_A, 0])
-pLoadsData.append([-F_B, L if beamType == 1 else beamData[2]])
+for m in mLoadsData:
+    drawMLoad(m)
+
 def getIndex1(aList):
     return aList[1]
-pLoadsData.sort(key=getIndex1)
 print("P loads data:", pLoadsData)
 print("w loads data:", wLoadsData)
 print("M loads data:", mLoadsData)
@@ -205,9 +251,10 @@ def calculateM(x):
     return M
 '''
 # Shear Force Diagram
+V0 = F_A if beamType in [1, 2] else 0
 def plotSFD():
     # calculate Vmax & Vmin
-    V, Vmax, Vmin = F_A, F_A, F_A
+    V, Vmax, Vmin = V0, V0, V0
     for p in pLoadsData[1:]:
         V -= p[0]
         if V > Vmax: Vmax = V
@@ -250,9 +297,9 @@ def plotSFD():
     sfd = turtle.Turtle()
     sfd.up()
     sfd.hideturtle()
-    sfd.goto(0, F_A/Vrange*50+ycor_o)
+    sfd.goto(0, V0/Vrange*50+ycor_o)
     sfd.down()
-    V = F_A
+    V = V0
     for l in pLoadsData[1:]:
         xcor = l[1]/L*100
         sfd.goto((sfd.xcor()+xcor)/2, sfd.ycor())
@@ -265,7 +312,7 @@ plotSFD()
 # Bending Moment Diagram
 def plotBMD():
     # calculate Mmax & Mmin
-    V = F_A
+    V = V0
     M, Mmax, Mmin = 0, 0, 0
     for i in range(len(pLoadsData)-1):
         M += V*(pLoadsData[i+1][1]-pLoadsData[i][1])/1000
@@ -312,7 +359,7 @@ def plotBMD():
     bmd.hideturtle()
     bmd.goto(0, ycor_o)
     bmd.down()
-    V = F_A
+    V = V0
     M = 0
     for i in range(len(pLoadsData)-1):
         xcor = pLoadsData[i+1][1]/L*100
@@ -340,6 +387,8 @@ def plotBMD():
             bmd.goto(bmd.xcor(), bmd.ycor()+4)
             bmd.down()
         V = Vnext
+    if beamType == 3:
+        bmd.goto(100, ycor_o)
 plotBMD()
 
 screen.exitonclick()
