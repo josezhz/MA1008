@@ -344,7 +344,7 @@ def plotBMD():
     bmd_x.write(0, align="right")
     bmd_x.goto(0, ycor_o)
     bmd_x.down()
-    for p in pLoadsData[1:]:
+    for p in pLoadsData[0 if beamType == 3 else 1:]:
         x = p[1]
         xcor = x/L*100
         bmd_x.goto(xcor, ycor_o)
