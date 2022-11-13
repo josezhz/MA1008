@@ -1,13 +1,13 @@
 import turtle
 
-def tryIntInput(title, prompt, default=None, minval=0, maxval=None):
+def tryIntInput(title, prompt, default=None, minval=None, maxval=None):
     while True:
         try:
             x = int(screen.numinput(title, prompt, default, minval, maxval))
             return x
         except:
             print("Please enter an INTEGER")
-def tryFloatInput(title, prompt, default=None, minval=0, maxval=None):
+def tryFloatInput(title, prompt, default=None, minval=None, maxval=None):
     while True:
         try:
             x = float(screen.numinput(title, prompt, default, minval, maxval))
@@ -55,8 +55,8 @@ def init():
 init()
 
 def getData():
-    beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever (under development)\nPlease enter an INTEGER", None, 1, 2)
-    _L = tryFloatInput("Beam Length", "L(mm) =", 1000, 0)
+    beamType = tryIntInput("Beam Type", "Beam type:\n1. Simply supported\n2. Overhanging\n3. Cantilever\nPlease enter an INTEGER", None, 1, 3)
+    _L = tryFloatInput("Beam Length", "L(mm) =", None, 0)
     beamData = [beamType, _L]
     if beamType == 2:
         _x_B = tryFloatInput("Support Position", "x_B(mm) =", None, 0, _L)
@@ -65,13 +65,13 @@ def getData():
     while True:
         n = len(loads) + 1
         print("n =", n)
-        loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load (under development)\n3. Bending moment (under development)\nPlease enter an INTEGER", 1, 1)
+        loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load (under development)\n3. Bending moment (under development)\nPlease enter an INTEGER", 1, 1, 1)
         if loadType == 1:
-            _P = tryFloatInput(f"Load #{n}", "P(N) =", None, None if beamType == 3 else 0)
+            _P = tryFloatInput(f"Load #{n}", "(+ve: upwards)\nP(N) =")
             _x = tryFloatInput(f"Load #{n}", "x(mm) =", None, 0, _L)
             loads.append([loadType, _P, _x])
         elif loadType == 2:
-            _w = tryFloatInput(f"Load #{n}", "w(N/m) =")
+            _w = tryFloatInput(f"Load #{n}", "(+ve: upwards)\nw(N/m) =")
             _x1 = tryFloatInput(f"Load #{n}", "x1(mm) =", None, 0, _L)
             _x2 = tryFloatInput(f"Load #{n}", "x2(mm) =", None, _x1, _L)
             loads.append([loadType, _w, _x1, _x2])
@@ -89,9 +89,9 @@ def getData():
     for eachLoad in loads:
         print(" ".join(str(e) for e in eachLoad), file=dataFile)
     dataFile.close()
-# getData()
+getData()
 
-dataFile = open("test.txt", "r")
+dataFile = open("data.txt", "r")
 lines = dataFile.readlines()
 dataFile.close()
 
@@ -99,7 +99,7 @@ beamData = [float(e) for e in lines[0].split(" ")]
 print("beam data:", beamData)
 L = beamData[1]
 beamType = beamData[0]
-if beamType in [1, 2]: # simply supported & overhanging
+if beamType in [1, 2]: # Simply Supported & Overhanging
     # Support A
     turtle.begin_fill()
     turtle.right(120)
@@ -121,7 +121,7 @@ if beamType in [1, 2]: # simply supported & overhanging
     turtle.end_fill()
     turtle.right(180)
     turtle.write("B", align="right")
-elif beamType == 3:
+elif beamType == 3: # Cantilever
     turtle.up()
     turtle.goto(100, 175)
     turtle.down()
@@ -140,18 +140,18 @@ for line in lines[1:]:
     elif loadData[0] == 2: wLoadsData.append(loadData[1:])
     elif loadData[0] == 3: mLoadsData.append(loadData[1:])
 if beamType in [1, 2]:
-    F_B = (sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*(w[2]-w[1])/1000*(w[1]+w[2])/2 for w in wLoadsData)) / beamData[2 if beamType == 2 else 1]
-    print("F_B =" ,F_B)
-    F_A = sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/100) for w in wLoadsData) - F_B
+    F_B = -(sum(p[0]*p[1] for p in pLoadsData) + sum(w[0]*(w[2]-w[1])/1000*(w[1]+w[2])/2 for w in wLoadsData) + sum(-m[0]*1000 for m in mLoadsData)) / beamData[2 if beamType == 2 else 1]
+    print("F_B =" , F_B)
+    F_A = -sum(p[0] for p in pLoadsData) + sum(w[0]*((w[2]-w[1])/1000) for w in wLoadsData) - F_B
     print("F_A =", F_A)
-    pLoadsData.append([-F_A, 0])
-    pLoadsData.append([-F_B, L if beamType == 1 else beamData[2]])
+    pLoadsData.append([F_A, 0])
+    pLoadsData.append([F_B, L if beamType == 1 else beamData[2]])
 elif beamType == 3:
-    F_R = sum(p[0] for p in pLoadsData) # upwards
-    M_R = sum(p[0]*(L-p[1]) for p in pLoadsData)/1000 # clockwise
-    pLoadsData.append([-F_R, L])
+    F_R = -sum(p[0] for p in pLoadsData)
+    M_R = -sum(p[0]*(L-p[1]) for p in pLoadsData)/1000
+    pLoadsData.append([F_R, L])
     pLoadsData.append([0, 0])
-    mLoadsData.append([-M_R, L])
+    mLoadsData.append([M_R, L])
 def getIndex1(aList):
     return aList[1]
 pLoadsData.sort(key=getIndex1)
@@ -161,16 +161,16 @@ def drawPLoad(p):
     loadPen = turtle.Turtle()
     loadPen.hideturtle()
     loadPen.up()
-    if P > 0:
+    if P < 0:
         loadPen.goto(x/L*100, 162)
         loadPen.right(90)
         loadPen.showturtle()
         loadPen.down()
-        loadPen.write(f"{P}N", align="center")
+        loadPen.write("{:.1f}".format(-P)+"N", align="center")
         loadPen.forward(10)
-    elif P < 0:
+    elif P > 0:
         loadPen.goto(x/L*100, 134)
-        loadPen.write(f"{-P}N", align="center")
+        loadPen.write("{:.1f}".format(P)+"N", align="center")
         loadPen.left(90)
         loadPen.showturtle()
         loadPen.forward(4)
@@ -205,19 +205,26 @@ def drawWLoad(w):
     loadPen3.forward(5)
 def drawMLoad(m):
     M = m[0]
-    x = m[1]
+    xcor = m[1]/L*100
     loadPen = turtle.Turtle()
     loadPen.hideturtle()
     loadPen.up()
-    loadPen.goto(x/L*100, 149.5)
+    loadPen.goto(xcor, 149.5)
     loadPen.begin_fill()
     loadPen.circle(.5)
     loadPen.end_fill()
-    loadPen.goto(x/L*100, 155)
-    loadPen.left(180)
-    loadPen.down()
-    loadPen.circle(5, -180)
-    loadPen.left(180)
+    loadPen.goto(xcor, 148)
+    loadPen.write("{:.1f}".format(M)+"Nm", align="right")
+    if M < 0:
+        loadPen.goto(xcor, 145)
+        loadPen.down()
+        loadPen.circle(5, 180)
+    elif M > 0:
+        loadPen.goto(xcor, 155)
+        loadPen.left(180)
+        loadPen.down()
+        loadPen.circle(5, -180)
+        loadPen.left(180)
     loadPen.showturtle()
     print("M drawn")
 for p in pLoadsData:
@@ -227,12 +234,11 @@ for w in wLoadsData:
 for m in mLoadsData:
     drawMLoad(m)
 
-def getIndex1(aList):
-    return aList[1]
 print("P loads data:", pLoadsData)
 print("w loads data:", wLoadsData)
 print("M loads data:", mLoadsData)
 '''
+# Calculating V & M using generalised function
 def return0IfNegative(x):
     return 0 if x < 0 else x
 def calculateV(x):
@@ -256,7 +262,7 @@ def plotSFD():
     # calculate Vmax & Vmin
     V, Vmax, Vmin = V0, V0, V0
     for p in pLoadsData[1:]:
-        V -= p[0]
+        V += p[0]
         if V > Vmax: Vmax = V
         if V < Vmin: Vmin = V
     print("Vmax Vmin =", Vmax, Vmin)
@@ -300,12 +306,12 @@ def plotSFD():
     sfd.goto(0, V0/Vrange*50+ycor_o)
     sfd.down()
     V = V0
-    for l in pLoadsData[1:]:
-        xcor = l[1]/L*100
+    for p in pLoadsData[1:]:
+        xcor = p[1]/L*100
         sfd.goto((sfd.xcor()+xcor)/2, sfd.ycor())
         sfd.write("{:.1f}".format(V), align="center")
         sfd.goto(xcor, sfd.ycor())
-        V -= l[0]
+        V += p[0]
         sfd.goto(xcor, V/Vrange*50 + ycor_o)
 plotSFD()
 
@@ -318,7 +324,7 @@ def plotBMD():
         M += V*(pLoadsData[i+1][1]-pLoadsData[i][1])/1000
         if M > Mmax: Mmax = M
         if M < Mmin: Mmin = M
-        V -= pLoadsData[i+1][0]
+        V += pLoadsData[i+1][0]
     print("Mmax Mmin =", Mmax, Mmin)
     Mrange = Mmax - Mmin
     # vertical axis
@@ -371,7 +377,7 @@ def plotBMD():
         bmd.circle(0.4)
         bmd.end_fill()
         bmd.goto(xcor, ycor)
-        Vnext = V - pLoadsData[i+1][0]
+        Vnext = V + pLoadsData[i+1][0]
         if M > 0:
             textAlign = "center"
             if V > 0 and Vnext > 0: textAlign = "right"
