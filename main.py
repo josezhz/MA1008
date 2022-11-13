@@ -64,7 +64,6 @@ def getData():
     loads = []
     while True:
         n = len(loads) + 1
-        print("n =", n)
         loadType = tryIntInput(f"Load #{n}", "Load type:\n1. Concentrated load\n2. Uniformly distributed load (under development)\n3. Bending moment (under development)\nPlease enter an INTEGER", 1, 1, 1)
         if loadType == 1:
             _P = tryFloatInput(f"Load #{n}", "(+ve: upwards)\nP(N) =")
@@ -81,8 +80,6 @@ def getData():
             loads.append([loadType, _M, _x])
         if not tryIntInput(f"Add Load #{n+1}?", "1: Yes\n0: No", None, 0, 1):
             break
-    print("_L =", _L, "beamType =", beamType)
-    print("loads =", loads)
 
     dataFile = open("data.txt", "w")
     print(" ".join(str(e) for e in beamData), file=dataFile)
@@ -226,7 +223,6 @@ def drawMLoad(m):
         loadPen.circle(5, -180)
         loadPen.left(180)
     loadPen.showturtle()
-    print("M drawn")
 for p in pLoadsData:
     drawPLoad(p)
 for w in wLoadsData:
